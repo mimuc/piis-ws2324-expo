@@ -6,10 +6,6 @@ import * as tf from '@tensorflow/tfjs';
 import {bundleResourceIO} from "@tensorflow/tfjs-react-native";
 
 
-// Whether to load model from app bundle (true) or through network (false).
-const LOAD_MODEL_FROM_BUNDLE = false;
-
-
 
 export default function App() {
   const [tfReady, setTfReady] = useState(false);
@@ -22,7 +18,7 @@ export default function App() {
         // Wait for tfjs to initialize the backend.
        await tf.ready();
 
-       const modelJson = require('./offline_model/model.json');
+       const modelJson = require('./offline_model/model.json'); // TODO I manually changed a datatype from float64 to float32
        const modelWeights1 = require('./offline_model/group1-shard1of1.bin');
        const modelUrl = bundleResourceIO(modelJson, [
            modelWeights1,
@@ -40,8 +36,23 @@ export default function App() {
 
   const makePrediction = function(){
     if(tfReady) {
-      const result = model.predict(tf.tensor2d([20], [1, 1]))
-      alert(result)
+        const x_test = require('./demo_data/x_test.json')
+
+        const a_values = []
+        Object.keys(x_test).forEach(function(key) {
+            a_values.push(x_test[key]["111"])  // true 0: 11725->0.99, 9310->0.06, 6184->0.04 ; true 1: 8536->0, 5452->0
+        })
+        console.log(a_values)
+
+
+
+        const reshaped = tf.tensor2d(a_values, [1,77] )
+        console.log(reshaped)
+
+        const result = model.predict(reshaped)
+        console.log(result.dataSync())
+
+        alert(result.dataSync())
     }
     else {
       console.warn("TF model not ready")
